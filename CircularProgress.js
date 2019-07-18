@@ -19,12 +19,63 @@ const LINEAR_GRADIENT_PREFIX_ID = 'gradientRing';
 export default class CircularProgress extends Component {
   static renderLinearGradients(state) {
     const { r1, beginColor, endColor, segments } = state;
+    console.warn(segments);
     let startColor = beginColor;
     let stopColor = calculateStopColor(1, beginColor, endColor, segments);
     let startAngle = 0;
     let stopAngle = (2 * Math.PI) / segments;
 
+    // since component is flipped horizontally, start is stop color and stop is start,
+    // 12 is 1st for right , and 1 is last to the left
     return range(1, segments + 1).map(i => {
+      if (i == 12) {
+        startColor = [255, 146, 125];
+        stopColor = [255, 142, 126]; // right start
+      }
+      if (i == 11) {
+        startColor = [255, 160, 123];
+        stopColor = [255, 146, 125]; // right start
+      }
+      if (i == 10) {
+        startColor = [255, 170, 122];
+        stopColor = [255, 160, 123]; // right start
+      }
+      if (i == 9) {
+        startColor = [255, 183, 122];
+        stopColor = [255, 170, 122]; // right start
+      }
+      if (i == 8) {
+        startColor = [255, 198, 119];
+        stopColor = [255, 183, 122]; // right start
+      }
+      if (i == 7) {
+        startColor = [255, 208, 136];
+        stopColor = [255, 198, 119]; // right start
+      }
+      if (i == 6) {
+        startColor = [255, 198, 119];
+        stopColor = [255, 208, 136]; // right start
+      }
+      if (i == 5) {
+        startColor = [176, 194, 135];
+        stopColor = [255, 198, 119]; // right start
+      }
+      if (i == 4) {
+        startColor = [116, 191, 147];
+        stopColor = [176, 194, 135]; // right start
+      }
+      if (i == 3) {
+        startColor = [57, 188, 159];
+        stopColor = [116, 191, 147]; // right start
+      }
+      if (i == 2) {
+        startColor = [28, 186, 165];
+        stopColor = [57, 188, 159]; // right start
+      }
+      if (i == 1) {
+        startColor = [0, 186, 171];
+        stopColor = [28, 186, 165]; // right start
+      }
       const linearGradient = (
         <LinearGradient
           id={LINEAR_GRADIENT_PREFIX_ID + i}
@@ -109,28 +160,28 @@ export default class CircularProgress extends Component {
 
   renderCirclePaths() {
     const { r1, r2, segments } = this.state;
-    const { size, width, beginColor, isClockwise } = this.props;
+    const { size, width, beginColor } = this.props;
     const fill = this.extractFill();
-    const direction = isClockwise ? 1 : -1;
+
     let numberOfPathsToDraw = Math.floor((2 * Math.PI * (fill / 100)) / ((2 * Math.PI) / segments));
     let rem = ((2 * Math.PI * (fill / 100)) / ((2 * Math.PI) / segments)) % 1;
     if (rem > 0) {
       numberOfPathsToDraw++;
     }
     let startAngle = 0;
-    let stopAngle = direction *(2 * Math.PI) / segments;
+    let stopAngle = -(2 * Math.PI) / segments;
 
     return [
       <Circle key="start_circle" cx={size / 2} cy={width / 2} r={width / 2} fill={beginColor} />,
       ...range(1, numberOfPathsToDraw + 1).map(i => {
         if (i === numberOfPathsToDraw && rem) {
-          stopAngle = direction * 2 * Math.PI * (fill / 100);
+          stopAngle = -2 * Math.PI * (fill / 100);
         }
         const circlePath = arc()
           .innerRadius(r1)
           .outerRadius(r2)
           .startAngle(startAngle)
-          .endAngle(stopAngle + (0.005 * direction));
+          .endAngle(stopAngle - 0.005);
 
         const path = (
           <Path
@@ -142,24 +193,17 @@ export default class CircularProgress extends Component {
           />
         );
         startAngle = stopAngle;
-        stopAngle = direction * (2 * Math.PI) / segments + stopAngle;
+        stopAngle -= (2 * Math.PI) / segments;
 
         return path;
       }),
       <Circle
         key="end_circle"
-        cx={(r2 - (r2 - r1) / 2) * Math.sin(2 * Math.PI * (fill / 100) - (!!isClockwise ? 0 : Math.PI)) + size / 2}
+        cx={(r2 - (r2 - r1) / 2) * Math.sin(2 * Math.PI * (fill / 100) - Math.PI) + size / 2}
         cy={(r2 - (r2 - r1) / 2) * Math.cos(2 * Math.PI * (fill / 100) - Math.PI) + size / 2}
         r={width / 2}
         fill={
-          'rgb(' +
-          calculateStopColor(
-            this.extractFill(),
-            this.state.endColor,
-            this.state.beginColor,
-            100
-          ).join(',') +
-          ')'
+          'transparent'
         }
       />,
     ];
@@ -172,9 +216,9 @@ export default class CircularProgress extends Component {
 
     return (
       <View style={style}>
-        <Svg width={size} height={size} scale="-1, 1">
+        <Svg width={size} height={size} scale="1, -1" originX={size / 2}>
           <Defs key="linear_gradients">{linearGradients}</Defs>
-          <G rotation={rotation} originX={size / 2} originY={size / 2}>
+          <G rotate={rotation - 90}>
             {this.renderBackgroundPath()}
             {this.renderCirclePaths()}
           </G>
@@ -195,12 +239,11 @@ CircularProgress.propTypes = {
   tintColor: PropTypes.string,
   width: PropTypes.number.isRequired,
   linecap: PropTypes.string,
-  isClockwise: PropTypes.bool,
 };
 
 CircularProgress.defaultProps = {
   tintColor: 'black',
   backgroundColor: '#e4e4e4',
-  rotation: 0,
+  rotation: 90,
   linecap: 'butt',
 };
