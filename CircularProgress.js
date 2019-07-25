@@ -19,7 +19,6 @@ const LINEAR_GRADIENT_PREFIX_ID = 'gradientRing';
 export default class CircularProgress extends Component {
   static renderLinearGradients(state) {
     const { r1, beginColor, endColor, segments } = state;
-    console.warn(segments);
     let startColor = beginColor;
     let stopColor = calculateStopColor(1, beginColor, endColor, segments);
     let startAngle = 0;
